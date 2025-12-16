@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.datasource.DefaultHttpDataSource
@@ -35,67 +36,85 @@ class StreamPlayer(
      * Initialize the ExoPlayer instance.
      */
     fun initialize() {
+        Log.d(TAG, "initialize() called")
         release() // Release any existing player
 
-        exoPlayer = ExoPlayer.Builder(context)
-            .build()
-            .apply {
-                // Set up player event listener
-                addListener(object : Player.Listener {
-                    override fun onPlaybackStateChanged(playbackState: Int) {
-                        when (playbackState) {
-                            Player.STATE_BUFFERING -> {
-                                Log.d(TAG, "State: Buffering")
-                                listener?.onBuffering()
-                            }
-                            Player.STATE_READY -> {
-                                Log.d(TAG, "State: Ready")
-                                if (playWhenReady) {
-                                    listener?.onPlaying()
-                                    retryAttempt = 0 // Reset retry counter on success
-                                    retryManager.reset()
+        try {
+            exoPlayer = ExoPlayer.Builder(context)
+                .build()
+                .apply {
+                    Log.d(TAG, "ExoPlayer instance created")
+                    
+                    // Set up player event listener
+                    addListener(object : Player.Listener {
+                        override fun onPlaybackStateChanged(playbackState: Int) {
+                            when (playbackState) {
+                                Player.STATE_BUFFERING -> {
+                                    Log.d(TAG, "State: Buffering")
+                                    listener?.onBuffering()
+                                }
+                                Player.STATE_READY -> {
+                                    Log.d(TAG, "State: Ready (playWhenReady=$playWhenReady)")
+                                    if (playWhenReady) {
+                                        listener?.onPlaying()
+                                        retryAttempt = 0 // Reset retry counter on success
+                                        retryManager.reset()
+                                    } else {
+                                        listener?.onPaused()
+                                    }
+                                }
+                                Player.STATE_ENDED -> {
+                                    Log.d(TAG, "State: Ended")
+                                    listener?.onEnded()
+                                }
+                                Player.STATE_IDLE -> {
+                                    Log.d(TAG, "State: Idle")
                                 }
                             }
-                            Player.STATE_ENDED -> {
-                                Log.d(TAG, "State: Ended")
-                                listener?.onEnded()
-                            }
-                            Player.STATE_IDLE -> {
-                                Log.d(TAG, "State: Idle")
-                            }
                         }
-                    }
 
-                    override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        if (!isPlaying && playbackState == Player.STATE_READY) {
-                            listener?.onPaused()
-                        }
-                    }
-
-                    override fun onPlayerError(error: PlaybackException) {
-                        Log.e(TAG, "Playback error: ${error.message}", error)
-                        listener?.onError(error)
-                        
-                        // Attempt to reconnect with exponential backoff
-                        retryManager.scheduleRetry(retryAttempt) {
-                            Log.d(TAG, "Retry attempt ${retryAttempt + 1}")
-                            retryAttempt++
-                            currentStreamUrl?.let { url ->
-                                play(url)
+                        override fun onIsPlayingChanged(isPlaying: Boolean) {
+                            Log.d(TAG, "onIsPlayingChanged: $isPlaying (state=${playbackState})")
+                            if (!isPlaying && playbackState == Player.STATE_READY) {
+                                listener?.onPaused()
                             }
                         }
-                    }
-                })
 
-                // Attach player to view
-                playerView.player = this
-                
-                // Configure player view
-                playerView.useController = false // Hide default controls
-                playerView.keepScreenOn = true
-            }
+                        override fun onPlayerError(error: PlaybackException) {
+                            Log.e(TAG, "PLAYBACK ERROR: ${error.message} (errorCode=${error.errorCode})", error)
+                            listener?.onError(error)
+                            
+                            // Attempt to reconnect with exponential backoff
+                            if (retryAttempt < 5) {
+                                Log.d(TAG, "Scheduling retry attempt ${retryAttempt + 1}/5")
+                                retryManager.scheduleRetry(retryAttempt) {
+                                    Log.d(TAG, "Executing retry attempt ${retryAttempt + 1}")
+                                    retryAttempt++
+                                    currentStreamUrl?.let { url ->
+                                        play(url)
+                                    }
+                                }
+                            } else {
+                                Log.e(TAG, "Max retries exceeded, giving up")
+                            }
+                        }
+                    })
 
-        Log.d(TAG, "Player initialized")
+                    // Attach player to view
+                    playerView.player = this
+                    Log.d(TAG, "Player attached to PlayerView")
+                    
+                    // Configure player view
+                    playerView.useController = false // Hide default controls
+                    playerView.keepScreenOn = true
+                    Log.d(TAG, "PlayerView configured")
+                }
+
+            Log.d(TAG, "Player initialization complete")
+        } catch (e: Exception) {
+            Log.e(TAG, "CRITICAL ERROR in initialize(): ${e.message}", e)
+            throw e
+        }
     }
 
     /**
@@ -103,25 +122,41 @@ class StreamPlayer(
      *
      * @param streamUrl The HLS stream URL (m3u8 playlist)
      */
+    @OptIn(UnstableApi::class)
     fun play(streamUrl: String) {
+        Log.d(TAG, "play() called with URL: $streamUrl")
         currentStreamUrl = streamUrl
         
         exoPlayer?.let { player ->
-            // Create HLS media source
-            val dataSourceFactory = DefaultHttpDataSource.Factory()
-                .setAllowCrossProtocolRedirects(true)
-            
-            val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(MediaItem.fromUri(streamUrl))
+            try {
+                Log.d(TAG, "Creating HLS media source...")
+                // Create HLS media source
+                val dataSourceFactory = DefaultHttpDataSource.Factory()
+                    .setAllowCrossProtocolRedirects(true)
+                
+                val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(MediaItem.fromUri(streamUrl))
+                
+                Log.d(TAG, "Media source created, preparing player...")
 
-            // Prepare and play
-            player.setMediaSource(mediaSource)
-            player.prepare()
-            player.playWhenReady = true
+                // Prepare and play
+                player.setMediaSource(mediaSource)
+                player.prepare()
+                player.playWhenReady = true
 
-            Log.d(TAG, "Playing stream: $streamUrl")
+                Log.d(TAG, "Playing stream: $streamUrl")
+            } catch (e: Exception) {
+                Log.e(TAG, "ERROR in play(): ${e.message}", e)
+                listener?.onError(
+                    PlaybackException(
+                        e.message ?: "Unexpected playback error",
+                        e,
+                        PlaybackException.ERROR_CODE_UNSPECIFIED
+                    )
+                )
+            }
         } ?: run {
-            Log.e(TAG, "Cannot play: Player not initialized")
+            Log.e(TAG, "CRITICAL ERROR: Cannot play - Player not initialized!")
         }
     }
 

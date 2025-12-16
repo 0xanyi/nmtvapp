@@ -8,7 +8,6 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.PlaybackException
 import androidx.media3.ui.PlayerView
 import com.nmtv.app.data.model.Channel
@@ -21,7 +20,7 @@ import com.nmtv.app.player.StreamPlayerListener
  * Main activity that displays fullscreen HLS video playback.
  * Launches directly into video playback with minimal UI.
  */
-class MainActivity : AppCompatActivity(), StreamPlayerListener {
+class MainActivity : android.app.Activity(), StreamPlayerListener {
 
     private lateinit var playerView: PlayerView
     private lateinit var loadingOverlay: FrameLayout
@@ -40,41 +39,63 @@ class MainActivity : AppCompatActivity(), StreamPlayerListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate() called")
         
-        // Set fullscreen flags
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_FULLSCREEN or
-            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        )
+        try {
+            setContentView(R.layout.activity_main)
+            Log.d(TAG, "Content view set")
 
-        setContentView(R.layout.activity_main)
+            // Set fullscreen flags after decor view exists to avoid NPE on TV emulator
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // Initialize views
-        playerView = findViewById(R.id.playerView)
-        loadingOverlay = findViewById(R.id.loadingOverlay)
-        pauseOverlay = findViewById(R.id.pauseOverlay)
-        errorOverlay = findViewById(R.id.errorOverlay)
-        errorMessage = findViewById(R.id.errorMessage)
-        errorProgressBar = findViewById(R.id.errorProgressBar)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                window.setDecorFitsSystemWindows(false)
+                window.decorView.windowInsetsController?.hide(android.view.WindowInsets.Type.systemBars())
+            } else {
+                @Suppress("DEPRECATION")
+                window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                )
+            }
 
-        // Initialize repository
-        channelRepository = LocalChannelRepository()
+            // Initialize views
+            playerView = findViewById(R.id.playerView)
+            loadingOverlay = findViewById(R.id.loadingOverlay)
+            pauseOverlay = findViewById(R.id.pauseOverlay)
+            errorOverlay = findViewById(R.id.errorOverlay)
+            errorMessage = findViewById(R.id.errorMessage)
+            errorProgressBar = findViewById(R.id.errorProgressBar)
+            
+            Log.d(TAG, "Views initialized")
 
-        // Initialize player
-        streamPlayer = StreamPlayer(this, playerView)
-        streamPlayer.setListener(this)
-        streamPlayer.initialize()
+            // Initialize repository
+            channelRepository = LocalChannelRepository()
+            Log.d(TAG, "Channel repository initialized")
 
-        // Get default channel and start playback
-        currentChannel = channelRepository.getDefaultChannel()
-        currentChannel?.let { channel ->
-            Log.d(TAG, "Starting playback: ${channel.name}")
-            streamPlayer.play(channel.streamUrl)
+            // Initialize player
+            streamPlayer = StreamPlayer(this, playerView)
+            streamPlayer.setListener(this)
+            streamPlayer.initialize()
+            Log.d(TAG, "Stream player initialized")
+
+            // Get default channel and start playback
+            currentChannel = channelRepository.getDefaultChannel()
+            Log.d(TAG, "Default channel: ${currentChannel?.name}")
+            
+            currentChannel?.let { channel ->
+                Log.d(TAG, "Starting playback: ${channel.name} - URL: ${channel.streamUrl}")
+                streamPlayer.play(channel.streamUrl)
+            } ?: run {
+                Log.e(TAG, "ERROR: No default channel found!")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "CRASH in onCreate: ${e.message}", e)
+            throw e
         }
     }
 
