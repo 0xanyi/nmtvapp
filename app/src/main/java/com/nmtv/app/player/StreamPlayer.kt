@@ -122,7 +122,7 @@ class StreamPlayer(
      *
      * @param streamUrl The HLS stream URL (m3u8 playlist)
      */
-    @OptIn(UnstableApi::class)
+    @androidx.annotation.OptIn(markerClass = [UnstableApi::class])
     fun play(streamUrl: String) {
         Log.d(TAG, "play() called with URL: $streamUrl")
         currentStreamUrl = streamUrl

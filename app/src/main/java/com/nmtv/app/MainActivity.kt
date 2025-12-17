@@ -1,5 +1,6 @@
 package com.nmtv.app
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -32,6 +33,12 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
     private lateinit var streamPlayer: StreamPlayer
     private lateinit var channelRepository: ChannelRepository
     private var currentChannel: Channel? = null
+    
+    // Channel banner views
+    private lateinit var channelBanner: FrameLayout
+    private lateinit var channelBannerTitle: TextView
+    private lateinit var channelBannerInfo: TextView
+    private var bannerHideRunnable: Runnable? = null
 
     companion object {
         private const val TAG = "MainActivity"
@@ -71,6 +78,11 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
             errorMessage = findViewById(R.id.errorMessage)
             errorProgressBar = findViewById(R.id.errorProgressBar)
             
+            // Initialize channel banner
+            channelBanner = findViewById(R.id.channelBanner)
+            channelBannerTitle = findViewById(R.id.channelBannerTitle)
+            channelBannerInfo = findViewById(R.id.channelBannerInfo)
+            
             Log.d(TAG, "Views initialized")
 
             // Initialize repository
@@ -83,15 +95,23 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
             streamPlayer.initialize()
             Log.d(TAG, "Stream player initialized")
 
-            // Get default channel and start playback
-            currentChannel = channelRepository.getDefaultChannel()
-            Log.d(TAG, "Default channel: ${currentChannel?.name}")
+            // Check if channel was selected from portal
+            val selectedChannelId = intent.getStringExtra("channel_id")
+            currentChannel = if (selectedChannelId != null) {
+                channelRepository.getChannelById(selectedChannelId)
+            } else {
+                channelRepository.getDefaultChannel()
+            }
+            
+            Log.d(TAG, "Selected channel: ${currentChannel?.name}")
             
             currentChannel?.let { channel ->
                 Log.d(TAG, "Starting playback: ${channel.name} - URL: ${channel.streamUrl}")
                 streamPlayer.play(channel.streamUrl)
+                // Show channel banner briefly when starting
+                showChannelBanner(channel)
             } ?: run {
-                Log.e(TAG, "ERROR: No default channel found!")
+                Log.e(TAG, "ERROR: No channel found!")
             }
         } catch (e: Exception) {
             Log.e(TAG, "CRASH in onCreate: ${e.message}", e)
@@ -114,6 +134,9 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        bannerHideRunnable?.let {
+            window.decorView.removeCallbacks(it)
+        }
         streamPlayer.release()
     }
 
@@ -139,10 +162,15 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
 
     override fun onPaused() {
         runOnUiThread {
-            loadingOverlay.visibility = View.GONE
-            pauseOverlay.visibility = View.VISIBLE
-            errorOverlay.visibility = View.GONE
-            Log.d(TAG, "Paused")
+            // Only show pause overlay if we're not buffering or showing error
+            if (loadingOverlay.visibility != View.VISIBLE && errorOverlay.visibility != View.VISIBLE) {
+                loadingOverlay.visibility = View.GONE
+                pauseOverlay.visibility = View.VISIBLE
+                errorOverlay.visibility = View.GONE
+                Log.d(TAG, "Paused - overlay shown")
+            } else {
+                Log.d(TAG, "Paused - overlay hidden due to other state")
+            }
         }
     }
 
@@ -190,7 +218,10 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
                 true
             }
             KeyEvent.KEYCODE_BACK -> {
-                // Exit app on back button
+                // Return to channel portal instead of exiting
+                val intent = Intent(this, ChannelPortalActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
                 finish()
                 true
             }
@@ -212,6 +243,7 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
                 Log.d(TAG, "Switching to next channel: ${nextChannel.name}")
                 currentChannel = nextChannel
                 streamPlayer.play(nextChannel.streamUrl)
+                showChannelBanner(nextChannel)
             }
         }
     }
@@ -222,7 +254,47 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
                 Log.d(TAG, "Switching to previous channel: ${prevChannel.name}")
                 currentChannel = prevChannel
                 streamPlayer.play(prevChannel.streamUrl)
+                showChannelBanner(prevChannel)
             }
+        }
+    }
+    
+    private fun showChannelBanner(channel: Channel) {
+        runOnUiThread {
+            // Cancel any pending hide
+            bannerHideRunnable?.let {
+                window.decorView.removeCallbacks(it)
+            }
+            
+            // Update banner content
+            channelBannerTitle.text = channel.name
+            channelBannerInfo.text = "Now Playing: Live Stream"
+            
+            // Show banner with animation
+            channelBanner.visibility = View.VISIBLE
+            channelBanner.alpha = 0f
+            channelBanner.animate()
+                .alpha(0.9f)
+                .setDuration(300)
+                .start()
+            
+            // Schedule auto-hide after 3 seconds
+            bannerHideRunnable = Runnable {
+                hideChannelBanner()
+            }
+            window.decorView.postDelayed(bannerHideRunnable!!, 3000)
+        }
+    }
+    
+    private fun hideChannelBanner() {
+        runOnUiThread {
+            channelBanner.animate()
+                .alpha(0f)
+                .setDuration(300)
+                .withEndAction {
+                    channelBanner.visibility = View.GONE
+                }
+                .start()
         }
     }
 }

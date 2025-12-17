@@ -14,14 +14,13 @@ class LocalChannelRepository : ChannelRepository {
             name = "NMTV UK",
             streamUrl = "https://cdn3.wowza.com/5/L1Uzd2FrbVlLRG1W/live/smil:nmtvuk.smil/playlist.m3u8",
             isDefault = true
+        ),
+        Channel(
+            id = "nmtv_classics",
+            name = "NMTV Classics",
+            streamUrl = "https://cdn3.wowza.com/5/NVF5TVdNQmR5OHRI/nwmc/nwmc_hd/playlist.m3u8",
+            isDefault = false
         )
-        // Add more channels here as needed:
-        // Channel(
-        //     id = "channel_2",
-        //     name = "Channel 2",
-        //     streamUrl = "https://example.com/stream2.m3u8",
-        //     isDefault = false
-        // )
     )
 
     override fun getDefaultChannel(): Channel {

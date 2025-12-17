@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/portal_background_gradient">
+
+    <!-- Background blur effect -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/background_blur" />
+
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="48dp"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NMTV"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:shadowColor="#FF00FF"
+            android:shadowRadius="12"
+            android:shadowDx="0"
+            android:shadowDy="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Select a channel to begin watching"
+            android:textSize="18sp"
+            android:textColor="#B3FFFFFF" />
+
+    </LinearLayout>
+
+    <!-- Channel cards container -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/header"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="64dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="32dp">
+
+        <!-- NMTV UK Card -->
+        <FrameLayout
+            android:id="@+id/cardNmtv"
+            android:layout_width="320dp"
+            android:layout_height="480dp"
+            android:layout_marginEnd="48dp"
+            android:background="@drawable/channel_card_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <!-- Preview Image -->
+                <ImageView
+                    android:id="@+id/cardNmtvPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/preview_nmtv" />
+
+                <!-- Info Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:background="#CC000000">
+
+                    <TextView
+                        android:id="@+id/cardNmtvTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="NMTV UK"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/cardNmtvDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Live streaming from the UK"
+                        android:textSize="16sp"
+                        android:textColor="#B3FFFFFF" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Focus indicator -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/channel_card_focus" />
+
+        </FrameLayout>
+
+        <!-- NMTV Classics Card -->
+        <FrameLayout
+            android:id="@+id/cardClassics"
+            android:layout_width="320dp"
+            android:layout_height="480dp"
+            android:layout_marginStart="48dp"
+            android:background="@drawable/channel_card_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <!-- Preview Image -->
+                <ImageView
+                    android:id="@+id/cardClassicsPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/preview_classics" />
+
+                <!-- Info Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:background="#CC000000">
+
+                    <TextView
+                        android:id="@+id/cardClassicsTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="NMTV Classics"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/cardClassicsDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Classic shows and timeless entertainment"
+                        android:textSize="16sp"
+                        android:textColor="#B3FFFFFF" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Focus indicator -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/channel_card_focus" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- Footer hint -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"
+        android:text="Use ← → to navigate, OK to select"
+        android:textSize="16sp"
+        android:textColor="#66FFFFFF" />
+
+</RelativeLayout>
