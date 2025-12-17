@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher Icon - Placeholder -->
-<!-- Replace with actual PNG icons for different densities in production -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="#FF1976D2" />
-    <corners android:radius="8dp" />
-</shape>
