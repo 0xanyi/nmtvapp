@@ -10,12 +10,14 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
 import com.nmtv.app.data.model.Channel
 import com.nmtv.app.data.repository.ChannelRepository
 import com.nmtv.app.data.repository.LocalChannelRepository
 import com.nmtv.app.player.StreamPlayer
 import com.nmtv.app.player.StreamPlayerListener
+import com.nmtv.app.ui.overlay.PlayerOverlayManager
 
 /**
  * Main activity that displays fullscreen HLS video playback.
@@ -32,17 +34,21 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
 
     private lateinit var streamPlayer: StreamPlayer
     private lateinit var channelRepository: ChannelRepository
+    private lateinit var overlayManager: PlayerOverlayManager
     private var currentChannel: Channel? = null
-    
+
     // Channel banner views
     private lateinit var channelBanner: FrameLayout
     private lateinit var channelBannerTitle: TextView
     private lateinit var channelBannerInfo: TextView
-    private var bannerHideRunnable: Runnable? = null
 
     companion object {
         private const val TAG = "MainActivity"
+        private const val MAX_RETRIES = 5
     }
+
+    // Track retry attempts for UI display
+    private var currentRetryAttempt = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,7 +88,19 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
             channelBanner = findViewById(R.id.channelBanner)
             channelBannerTitle = findViewById(R.id.channelBannerTitle)
             channelBannerInfo = findViewById(R.id.channelBannerInfo)
-            
+
+            // Initialize overlay manager with state machine
+            overlayManager = PlayerOverlayManager(
+                loadingOverlay = loadingOverlay,
+                pauseOverlay = pauseOverlay,
+                errorOverlay = errorOverlay,
+                errorMessage = errorMessage,
+                errorProgressBar = errorProgressBar,
+                channelBanner = channelBanner,
+                channelBannerTitle = channelBannerTitle,
+                channelBannerInfo = channelBannerInfo
+            )
+
             Log.d(TAG, "Views initialized")
 
             // Initialize repository
@@ -106,10 +124,10 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
             Log.d(TAG, "Selected channel: ${currentChannel?.name}")
             
             currentChannel?.let { channel ->
-                Log.d(TAG, "Starting playback: ${channel.name} - URL: ${channel.streamUrl}")
+                Log.d(TAG, "Starting playback: ${channel.name}")  // Removed URL from log
                 streamPlayer.play(channel.streamUrl)
                 // Show channel banner briefly when starting
-                showChannelBanner(channel)
+                overlayManager.showChannelBanner(channel.name)
             } ?: run {
                 Log.e(TAG, "ERROR: No channel found!")
             }
@@ -121,9 +139,34 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
 
     override fun onResume() {
         super.onResume()
-        // Always restart stream on resume (as per architecture decision)
+        // Smart resume: only restart if player is in an error or idle state
+        // Don't interrupt if already playing or buffering
         currentChannel?.let { channel ->
-            streamPlayer.play(channel.streamUrl)
+            val playerState = streamPlayer.playbackState
+            when (playerState) {
+                Player.STATE_IDLE, Player.STATE_ENDED -> {
+                    // Player stopped or ended, restart stream
+                    Log.d(TAG, "Restarting stream on resume (state: $playerState)")
+                    streamPlayer.play(channel.streamUrl)
+                }
+                Player.STATE_READY -> {
+                    // Player is ready but paused, just resume playback
+                    if (!streamPlayer.isPlaying()) {
+                        Log.d(TAG, "Resuming paused stream")
+                        streamPlayer.resume()
+                    } else {
+                        Log.d(TAG, "Stream already playing, no action needed")
+                    }
+                }
+                Player.STATE_BUFFERING -> {
+                    // Already buffering, don't interrupt
+                    Log.d(TAG, "Stream buffering, no action needed")
+                }
+                else -> {
+                    // Unknown state, do nothing
+                    Log.d(TAG, "Unknown player state: $playerState")
+                }
+            }
         }
     }
 
@@ -134,9 +177,8 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        bannerHideRunnable?.let {
-            window.decorView.removeCallbacks(it)
-        }
+        // Release overlay manager resources
+        overlayManager.release()
         streamPlayer.release()
     }
 
@@ -144,44 +186,32 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
 
     override fun onBuffering() {
         runOnUiThread {
-            loadingOverlay.visibility = View.VISIBLE
-            pauseOverlay.visibility = View.GONE
-            errorOverlay.visibility = View.GONE
+            overlayManager.showLoading()
             Log.d(TAG, "Buffering...")
         }
     }
 
     override fun onPlaying() {
         runOnUiThread {
-            loadingOverlay.visibility = View.GONE
-            pauseOverlay.visibility = View.GONE
-            errorOverlay.visibility = View.GONE
+            overlayManager.hide()
+            currentRetryAttempt = 0 // Reset retry counter on successful playback
             Log.d(TAG, "Playing")
         }
     }
 
     override fun onPaused() {
         runOnUiThread {
-            // Only show pause overlay if we're not buffering or showing error
-            if (loadingOverlay.visibility != View.VISIBLE && errorOverlay.visibility != View.VISIBLE) {
-                loadingOverlay.visibility = View.GONE
-                pauseOverlay.visibility = View.VISIBLE
-                errorOverlay.visibility = View.GONE
-                Log.d(TAG, "Paused - overlay shown")
-            } else {
-                Log.d(TAG, "Paused - overlay hidden due to other state")
-            }
+            overlayManager.showPaused()
+            Log.d(TAG, "Paused")
         }
     }
 
     override fun onError(error: PlaybackException) {
         runOnUiThread {
-            loadingOverlay.visibility = View.GONE
-            pauseOverlay.visibility = View.GONE
-            errorOverlay.visibility = View.VISIBLE
-            errorProgressBar.visibility = View.VISIBLE
-            errorMessage.text = getString(R.string.retrying_connection)
-            Log.e(TAG, "Playback error", error)
+            currentRetryAttempt++
+            val isRetrying = currentRetryAttempt < MAX_RETRIES
+            overlayManager.showError(error, currentRetryAttempt, MAX_RETRIES, isRetrying)
+            Log.e(TAG, "Playback error (attempt $currentRetryAttempt/$MAX_RETRIES)", error)
         }
     }
 
@@ -242,8 +272,9 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
             channelRepository.getNextChannel(channel.id)?.let { nextChannel ->
                 Log.d(TAG, "Switching to next channel: ${nextChannel.name}")
                 currentChannel = nextChannel
+                currentRetryAttempt = 0 // Reset retry counter on channel switch
                 streamPlayer.play(nextChannel.streamUrl)
-                showChannelBanner(nextChannel)
+                overlayManager.showChannelBanner(nextChannel.name)
             }
         }
     }
@@ -253,48 +284,10 @@ class MainActivity : android.app.Activity(), StreamPlayerListener {
             channelRepository.getPreviousChannel(channel.id)?.let { prevChannel ->
                 Log.d(TAG, "Switching to previous channel: ${prevChannel.name}")
                 currentChannel = prevChannel
+                currentRetryAttempt = 0 // Reset retry counter on channel switch
                 streamPlayer.play(prevChannel.streamUrl)
-                showChannelBanner(prevChannel)
+                overlayManager.showChannelBanner(prevChannel.name)
             }
-        }
-    }
-    
-    private fun showChannelBanner(channel: Channel) {
-        runOnUiThread {
-            // Cancel any pending hide
-            bannerHideRunnable?.let {
-                window.decorView.removeCallbacks(it)
-            }
-            
-            // Update banner content
-            channelBannerTitle.text = channel.name
-            channelBannerInfo.text = "Now Playing: Live Stream"
-            
-            // Show banner with animation
-            channelBanner.visibility = View.VISIBLE
-            channelBanner.alpha = 0f
-            channelBanner.animate()
-                .alpha(0.9f)
-                .setDuration(300)
-                .start()
-            
-            // Schedule auto-hide after 3 seconds
-            bannerHideRunnable = Runnable {
-                hideChannelBanner()
-            }
-            window.decorView.postDelayed(bannerHideRunnable!!, 3000)
-        }
-    }
-    
-    private fun hideChannelBanner() {
-        runOnUiThread {
-            channelBanner.animate()
-                .alpha(0f)
-                .setDuration(300)
-                .withEndAction {
-                    channelBanner.visibility = View.GONE
-                }
-                .start()
         }
     }
 }

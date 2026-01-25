@@ -5,6 +5,16 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
+# SECURITY: Remove all logging in release builds
+-assumenosideeffects class android.util.Log {
+    public static *** v(...);
+    public static *** d(...);
+    public static *** i(...);
+    public static *** w(...);
+    public static *** e(...);
+    public static *** wtf(...);
+}
+
 # Keep ExoPlayer classes
 -keep class androidx.media3.** { *; }
 -dontwarn androidx.media3.**

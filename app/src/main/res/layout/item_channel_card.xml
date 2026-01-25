@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/channel_card_width"
+    android:layout_height="@dimen/channel_card_height"
+    android:background="@drawable/channel_card_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:elevation="12dp">
+
+    <!-- Preview Image -->
+    <ImageView
+        android:id="@+id/channelPreview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:importantForAccessibility="no"
+        tools:src="@drawable/nmtv_live" />
+
+    <!-- Focus indicator overlay -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/channel_card_focus" />
+
+    <!-- Info Overlay -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#CC000000"
+        android:padding="@dimen/card_info_padding"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/channelTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_card_title"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            tools:text="NMTV UK" />
+
+        <TextView
+            android:id="@+id/channelDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_card_description"
+            android:textColor="#B3FFFFFF"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Live streaming from the UK" />
+
+    </LinearLayout>
+
+</FrameLayout>

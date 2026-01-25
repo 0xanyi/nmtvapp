@@ -1,196 +1,269 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/portal_background_gradient">
+    android:paddingStart="@dimen/safe_margin_horizontal"
+    android:paddingEnd="@dimen/safe_margin_horizontal"
+    android:paddingTop="@dimen/safe_margin_vertical"
+    android:paddingBottom="@dimen/safe_margin_vertical"
+    android:background="@drawable/portal_background">
 
-    <!-- Background blur effect -->
+    <!-- Background blur/overlay for better readability -->
+    <ImageView
+        android:id="@+id/blurBackground"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Overlay for darkening the blurred background -->
     <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/background_blur" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/overlay_light"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Header -->
     <LinearLayout
         android:id="@+id/header"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="16dp"
         android:orientation="vertical"
-        android:gravity="center">
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="NMTV"
-            android:textSize="48sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:shadowColor="#FF00FF"
-            android:shadowRadius="12"
-            android:shadowDx="0"
-            android:shadowDy="0" />
+        <ImageView
+            android:layout_width="@dimen/logo_size"
+            android:layout_height="@dimen/logo_size"
+            android:src="@drawable/nmtv_icon"
+            android:importantForAccessibility="no" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Select a channel to begin watching"
-            android:textSize="18sp"
-            android:textColor="#B3FFFFFF" />
+            android:text="@string/select_channel_prompt"
+            android:textSize="@dimen/text_body"
+            android:textColor="@color/text_primary"
+            android:shadowColor="@color/black"
+            android:shadowRadius="4"
+            android:shadowDx="1"
+            android:shadowDy="1" />
 
     </LinearLayout>
 
     <!-- Channel cards container -->
     <LinearLayout
+        android:id="@+id/cardsContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/header"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="48dp"
         android:orientation="horizontal"
         android:gravity="center"
-        android:padding="32dp">
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header">
 
-        <!-- NMTV UK Card -->
-        <FrameLayout
-            android:id="@+id/cardNmtv"
-            android:layout_width="320dp"
-            android:layout_height="480dp"
-            android:layout_marginEnd="48dp"
-            android:background="@drawable/channel_card_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:elevation="8dp">
+        <!-- NMTV UK Card with Reflection -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/card_gap"
+            android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+            <FrameLayout
+                android:id="@+id/cardNmtv"
+                android:layout_width="@dimen/channel_card_width"
+                android:layout_height="@dimen/channel_card_height"
+                android:background="@drawable/channel_card_background"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="@dimen/card_elevation_unfocused"
+                android:nextFocusRight="@id/cardClassics"
+                android:nextFocusLeft="@id/cardClassics"
+                android:contentDescription="@string/channel_nmtv_uk_description"
+                android:accessibilityTraversalBefore="@id/cardClassics">
 
-                <!-- Preview Image -->
-                <ImageView
-                    android:id="@+id/cardNmtvPreview"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/preview_nmtv" />
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-                <!-- Info Section -->
+                    <!-- Preview Image -->
+                    <ImageView
+                        android:id="@+id/cardNmtvPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/nmtv_live"
+                        android:importantForAccessibility="no" />
+
+                </LinearLayout>
+
+                <!-- Focus indicator overlay -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/channel_card_focus" />
+
+                <!-- Info Overlay -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="24dp"
-                    android:background="#CC000000">
+                    android:layout_gravity="bottom"
+                    android:background="@color/overlay_dark"
+                    android:padding="@dimen/card_info_padding"
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/cardNmtvTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="NMTV UK"
-                        android:textSize="24sp"
+                        android:text="@string/channel_nmtv_uk"
+                        android:textSize="@dimen/text_card_title"
                         android:textStyle="bold"
-                        android:textColor="@android:color/white" />
+                        android:textColor="@color/text_primary" />
 
                     <TextView
                         android:id="@+id/cardNmtvDesc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Live streaming from the UK"
-                        android:textSize="16sp"
-                        android:textColor="#B3FFFFFF" />
+                        android:text="@string/channel_nmtv_uk_short_desc"
+                        android:textSize="@dimen/text_card_description"
+                        android:textColor="@color/text_secondary"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+                </LinearLayout>
+
+            </FrameLayout>
+
+            <!-- Reflection -->
+            <ImageView
+                android:id="@+id/cardNmtvReflection"
+                android:layout_width="@dimen/channel_card_width"
+                android:layout_height="@dimen/reflection_height"
+                android:scaleY="-1"
+                android:visibility="invisible"
+                android:background="@drawable/card_reflection_gradient"
+                android:importantForAccessibility="no" />
+
+        </LinearLayout>
+
+        <!-- NMTV Classics Card with Reflection -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/card_gap"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/cardClassics"
+                android:layout_width="@dimen/channel_card_width"
+                android:layout_height="@dimen/channel_card_height"
+                android:background="@drawable/channel_card_background"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="@dimen/card_elevation_unfocused"
+                android:nextFocusLeft="@id/cardNmtv"
+                android:nextFocusRight="@id/cardNmtv"
+                android:contentDescription="@string/channel_nmtv_classics_description"
+                android:accessibilityTraversalAfter="@id/cardNmtv">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!-- Preview Image -->
+                    <ImageView
+                        android:id="@+id/cardClassicsPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/nmtv_classics"
+                        android:importantForAccessibility="no" />
 
                 </LinearLayout>
 
-            </LinearLayout>
-
-            <!-- Focus indicator -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/channel_card_focus" />
-
-        </FrameLayout>
-
-        <!-- NMTV Classics Card -->
-        <FrameLayout
-            android:id="@+id/cardClassics"
-            android:layout_width="320dp"
-            android:layout_height="480dp"
-            android:layout_marginStart="48dp"
-            android:background="@drawable/channel_card_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:elevation="8dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <!-- Preview Image -->
-                <ImageView
-                    android:id="@+id/cardClassicsPreview"
+                <!-- Focus indicator overlay -->
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/preview_classics" />
+                    android:layout_height="match_parent"
+                    android:background="@drawable/channel_card_focus" />
 
-                <!-- Info Section -->
+                <!-- Info Overlay -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="24dp"
-                    android:background="#CC000000">
+                    android:layout_gravity="bottom"
+                    android:background="@color/overlay_dark"
+                    android:padding="@dimen/card_info_padding"
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/cardClassicsTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="NMTV Classics"
-                        android:textSize="24sp"
+                        android:text="@string/channel_nmtv_classics"
+                        android:textSize="@dimen/text_card_title"
                         android:textStyle="bold"
-                        android:textColor="@android:color/white" />
+                        android:textColor="@color/text_primary" />
 
                     <TextView
                         android:id="@+id/cardClassicsDesc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Classic shows and timeless entertainment"
-                        android:textSize="16sp"
-                        android:textColor="#B3FFFFFF" />
-
+                        android:text="@string/channel_nmtv_classics_short_desc"
+                        android:textSize="@dimen/text_card_description"
+                        android:textColor="@color/text_secondary"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
                 </LinearLayout>
 
-            </LinearLayout>
+            </FrameLayout>
 
-            <!-- Focus indicator -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/channel_card_focus" />
+            <!-- Reflection -->
+            <ImageView
+                android:id="@+id/cardClassicsReflection"
+                android:layout_width="@dimen/channel_card_width"
+                android:layout_height="@dimen/reflection_height"
+                android:scaleY="-1"
+                android:visibility="invisible"
+                android:background="@drawable/card_reflection_gradient"
+                android:importantForAccessibility="no" />
 
-        </FrameLayout>
+        </LinearLayout>
 
     </LinearLayout>
 
     <!-- Footer hint -->
     <TextView
+        android:id="@+id/footerHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="32dp"
-        android:text="Use ← → to navigate, OK to select"
-        android:textSize="16sp"
-        android:textColor="#66FFFFFF" />
+        android:layout_marginBottom="16dp"
+        android:text="@string/navigation_hint"
+        android:textSize="@dimen/text_hint"
+        android:textColor="@color/text_secondary"
+        android:shadowColor="@color/black"
+        android:shadowRadius="4"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

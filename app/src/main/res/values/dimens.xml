@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Animation constants -->
+    <item name="focus_scale_factor" format="float" type="dimen">1.08</item>
+    <integer name="focus_animation_duration">300</integer>
+    <dimen name="card_elevation_unfocused">12dp</dimen>
+    <dimen name="card_elevation_focused">24dp</dimen>
+    <dimen name="reflection_height">60dp</dimen>
+    <dimen name="card_corner_radius">24dp</dimen>
+    <dimen name="card_width">400dp</dimen>
+    <dimen name="card_height">225dp</dimen>
+    <dimen name="card_gap">80dp</dimen>
+    <dimen name="logo_size">140dp</dimen>
+
+    <!-- Channel card dimensions -->
+    <dimen name="channel_card_width">400dp</dimen>
+    <dimen name="channel_card_height">225dp</dimen>
+    <dimen name="card_info_padding">12dp</dimen>
+
+    <!-- TV-appropriate text sizes (minimum 20sp for readability at 10ft) -->
+    <dimen name="text_title">24sp</dimen>
+    <dimen name="text_body">20sp</dimen>
+    <dimen name="text_card_title">20sp</dimen>
+    <dimen name="text_card_description">16sp</dimen>
+    <dimen name="text_hint">18sp</dimen>
+
+    <!-- Safe margins for TV overscan (4% of screen) -->
+    <dimen name="safe_margin_horizontal">48dp</dimen>
+    <dimen name="safe_margin_vertical">27dp</dimen>
+
+    <!-- Leanback row spacing -->
+    <dimen name="row_horizontal_padding">48dp</dimen>
+    <dimen name="row_item_spacing">24dp</dimen>
+</resources>

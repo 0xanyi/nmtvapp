@@ -44,6 +44,15 @@
             android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:launchMode="singleTask" />
+
+        <!-- Leanback-based portal for scalable channel browsing -->
+        <activity
+            android:name=".ui.LeanbackPortalActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Leanback" />
     </application>
 
 </manifest>

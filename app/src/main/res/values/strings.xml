@@ -7,4 +7,32 @@
     <string name="connection_error">Connection Error</string>
     <string name="retrying_connection">Retrying connection…</string>
     <string name="max_retries_exceeded">Unable to connect to stream.\nPlease check your internet connection.</string>
+
+    <!-- Channel Portal -->
+    <string name="select_channel_prompt">Select a channel to begin watching</string>
+    <string name="navigation_hint">Use ← → to navigate, OK to select</string>
+
+    <!-- Channel names -->
+    <string name="channel_nmtv_uk">NMTV UK</string>
+    <string name="channel_nmtv_classics">NMTV Classics</string>
+
+    <!-- Channel descriptions (short for cards) -->
+    <string name="channel_nmtv_uk_short_desc">Live streaming from the UK</string>
+    <string name="channel_nmtv_classics_short_desc">Classic shows and entertainment</string>
+
+    <!-- Accessibility descriptions -->
+    <string name="channel_nmtv_uk_description">NMTV UK. Live streaming from the UK with the latest content. Press OK to watch.</string>
+    <string name="channel_nmtv_classics_description">NMTV Classics. Classic shows and timeless entertainment. Press OK to watch.</string>
+    <string name="logo_description">NMTV Logo</string>
+
+    <!-- Player accessibility -->
+    <string name="video_player_description">Video player. Use remote to control playback.</string>
+    <string name="loading_overlay_description">Loading. Connecting to stream, please wait.</string>
+    <string name="pause_overlay_description">Playback paused. Press OK to resume.</string>
+    <string name="error_overlay_description">Connection error. Check your internet connection.</string>
+    <string name="connecting_to_stream">Connecting to stream…</string>
+    <string name="press_ok_to_resume">Press OK to resume</string>
+    <string name="channel_name_placeholder">Channel Name</string>
+    <string name="now_playing_placeholder">Now Playing: Live Stream</string>
+    <string name="channel_switched">Channel switched</string>
 </resources>

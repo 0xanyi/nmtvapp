@@ -3,4 +3,22 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="tv_blue">#FF1976D2</color>
+
+    <!-- Brand colors -->
+    <color name="brand_primary">#FF1A1A2E</color>
+    <color name="brand_accent">#FF4A90D9</color>
+    <color name="brand_surface">#FF16213E</color>
+
+    <!-- Focus colors -->
+    <color name="focus_highlight">#FF4A90D9</color>
+    <color name="focus_background">#33FFFFFF</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+    <color name="text_disabled">#66FFFFFF</color>
+
+    <!-- Overlay colors -->
+    <color name="overlay_dark">#CC000000</color>
+    <color name="overlay_light">#66000000</color>
 </resources>

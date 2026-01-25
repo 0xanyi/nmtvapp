@@ -11,6 +11,7 @@
         android:id="@+id/playerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:contentDescription="@string/video_player_description"
         app:use_controller="false"
         app:surface_type="texture_view"
         app:resize_mode="fit"
@@ -21,8 +22,11 @@
         android:id="@+id/loadingOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#80000000"
-        android:visibility="gone">
+        android:background="@color/overlay_dark"
+        android:visibility="gone"
+        android:contentDescription="@string/loading_overlay_description"
+        android:importantForAccessibility="yes"
+        android:accessibilityLiveRegion="polite">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -37,7 +41,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:indeterminateTint="@android:color/white"
-                android:indeterminate="true" />
+                android:indeterminate="true"
+                android:importantForAccessibility="no" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -45,16 +50,16 @@
                 android:layout_marginTop="24dp"
                 android:text="@string/loading"
                 android:textColor="@android:color/white"
-                android:textSize="20sp"
+                android:textSize="@dimen/text_title"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Connecting to stream..."
-                android:textColor="#B3FFFFFF"
-                android:textSize="16sp" />
+                android:text="@string/connecting_to_stream"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_body" />
 
         </LinearLayout>
 
@@ -65,10 +70,13 @@
         android:id="@+id/pauseOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#80000000"
+        android:background="@color/overlay_dark"
         android:visibility="gone"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:contentDescription="@string/pause_overlay_description"
+        android:importantForAccessibility="yes"
+        android:accessibilityLiveRegion="polite">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -83,7 +91,8 @@
                 android:layout_width="160dp"
                 android:layout_height="160dp"
                 android:src="@drawable/ic_play_glow"
-                android:contentDescription="@string/play" />
+                android:contentDescription="@string/play"
+                android:importantForAccessibility="yes" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -91,16 +100,16 @@
                 android:layout_marginTop="24dp"
                 android:text="@string/paused"
                 android:textColor="@android:color/white"
-                android:textSize="24sp"
+                android:textSize="@dimen/text_title"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Press OK to resume"
-                android:textColor="#B3FFFFFF"
-                android:textSize="16sp" />
+                android:text="@string/press_ok_to_resume"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_body" />
 
         </LinearLayout>
 
@@ -111,8 +120,11 @@
         android:id="@+id/errorOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#CC000000"
-        android:visibility="gone">
+        android:background="@color/overlay_dark"
+        android:visibility="gone"
+        android:contentDescription="@string/error_overlay_description"
+        android:importantForAccessibility="yes"
+        android:accessibilityLiveRegion="assertive">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -128,7 +140,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/connection_error"
                 android:textColor="@android:color/white"
-                android:textSize="24sp"
+                android:textSize="@dimen/text_title"
                 android:textStyle="bold" />
 
             <TextView
@@ -137,7 +149,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:textColor="@android:color/white"
-                android:textSize="16sp"
+                android:textSize="@dimen/text_body"
                 android:gravity="center" />
 
             <ProgressBar
@@ -146,7 +158,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:indeterminateTint="@android:color/white"
-                android:visibility="gone" />
+                android:visibility="gone"
+                android:importantForAccessibility="no" />
 
         </LinearLayout>
 
@@ -158,13 +171,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="32dp"
-        android:layout_marginStart="64dp"
-        android:layout_marginEnd="64dp"
+        android:layout_marginTop="@dimen/safe_margin_vertical"
+        android:layout_marginStart="@dimen/safe_margin_horizontal"
+        android:layout_marginEnd="@dimen/safe_margin_horizontal"
         android:background="@drawable/channel_banner_background"
         android:padding="24dp"
         android:visibility="gone"
-        android:alpha="0.9">
+        android:alpha="0.9"
+        android:importantForAccessibility="yes"
+        android:accessibilityLiveRegion="polite">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -183,8 +198,8 @@
                     android:id="@+id/channelBannerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Channel Name"
-                    android:textSize="24sp"
+                    android:text="@string/channel_name_placeholder"
+                    android:textSize="@dimen/text_title"
                     android:textStyle="bold"
                     android:textColor="@android:color/white" />
 
@@ -193,9 +208,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Now Playing: Live Stream"
-                    android:textSize="16sp"
-                    android:textColor="#B3FFFFFF" />
+                    android:text="@string/now_playing_placeholder"
+                    android:textSize="@dimen/text_body"
+                    android:textColor="@color/text_secondary" />
 
             </LinearLayout>
 
@@ -203,8 +218,9 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/ic_channel_switch"
-                android:contentDescription="Channel switched"
-                android:tint="@android:color/white" />
+                android:contentDescription="@string/channel_switched"
+                android:tint="@android:color/white"
+                android:importantForAccessibility="no" />
 
         </LinearLayout>
 
